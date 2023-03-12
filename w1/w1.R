@@ -1,3 +1,5 @@
+## Notes
+
 # Getting Help
 # __________________________________
 # Get more information about function
@@ -58,5 +60,89 @@ income_std_error <- tapply(incomes_df, state_df, get_std_error)
 # So many functions, Google is your best friend!
 x = array(1:20, dim=c(4,5))
 
+# List 
+# __________________________________
+# Similar (ish) to dictionary data structure in Python
+husband_list <- list(name="Fred", wife="Mary", no_children=3, child_ages=c(2,3,5), picket_fence=TRUE)
 
+# Dataframe
+# __________________________________
+# Basically column-binds multiple other vectors
+# Must have same number of rows to column-bind
+accountants <- data.frame(home=state_df, loot=incomes_df, shot=incomes_df)
+# Not sure about detach and attach. GET HELP FOR THAT
 
+# ________________________________________________________________________________________
+
+## Reproducibility
+# __________________________________
+# Any DA work report is likely to be rerun
+  # Dataset gets updated
+  # Review or QA want slightly different analysis
+  # Revisit some past work
+# That's why we use Git. Already sorted!
+
+# Markdown
+# __________________________________
+# Only work on this once I have the code knuckled down!
+
+# ________________________________________________________________________________________
+
+## Tidyverse package
+# __________________________________
+# Best package in R for data wrangling. (includes dyplr)
+
+# Gather (pivot_longer) vs Spread
+# __________________________________
+# Gather (pivot_longer): used to push data from cols to rows
+# Spread:Used to push data from rows to cols
+# Both functions are inverses of eachother
+
+# Piping
+# __________________________________
+# Use %>% to create pipe. Basically this makes the var on the left the first input to the function
+# On the right of the symbol
+# Makes code easier to read
+
+# Separate and combining cols
+# __________________________________
+# Used to seperate variables by their names. For example
+
+# Separate:
+# alarms_count_df <- alarms_count_df %>%
+#   separate(date, c('prefix', 'year', 'month', 'day'))
+
+# Unite:
+# alarms_count_df <- alarms_count_df %>%
+#   unite("yearmonth", year:month, remove = F)
+
+# Subsetting and Adding Columns
+# __________________________________
+# Remove prefix col
+# alarms_count_df %>% select(-prefix))
+
+# Just want prefix col
+# alarms_count_df %>% select(prefix))
+
+# Mutate
+# Add category
+# alarms_count_df %>% mutate(category = if_else(frequency >= 400, 'High', 'Low'))
+
+# Joining
+# __________________________________
+# Join: Used to join two dataframes based on similar IDs
+# REFER to SQL joining diagram
+
+# Group
+# __________________________________
+# Use group_by({var}, {var}), which will combine elements from different rows
+# Determines how we will summaries data
+# Can also convert datetime to day. Then can group data by days
+
+# ________________________________________________________________________________________
+
+# Questions: What's the difference between .R and .RProj files and why would I use the latter?
+# What is the wrangling workflow for a DS?
+
+# Notes
+# Research on Anaconda, AWS, Jupyter, Cloud and Docker
