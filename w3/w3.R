@@ -1,3 +1,5 @@
+# Week 3 Notes
+
 # Assumptions for Linear Regression Models
 # __________________________________
 # 1) Independence Assumption: We assume Yi are independant of eachother. Is determined by experimental design
