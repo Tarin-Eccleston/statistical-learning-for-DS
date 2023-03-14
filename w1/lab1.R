@@ -1,4 +1,6 @@
-## Task 1: Generate Alarm Data
+# Lab 1
+
+# Task 1: Generate Alarm Data
 
 # load library
 # note: there are some conflicts
