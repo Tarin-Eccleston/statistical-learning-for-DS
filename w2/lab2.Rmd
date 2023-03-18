@@ -1,26 +1,20 @@
-# Lab 2
+### Lab 2: Data Cleaning and Visualisation
+## Task 1: Examine the Data
 
-# Task 1: Examine the Data
+Firstly the group column isn't ordered in rows in the excel file. Instead it's a heading for each of the descriptions.
+To solve this, I would create a for-loop and loop through the description elements and then once I reach a different group title, I change the group value and continue.
 
-# Firstly the group column isn't ordered in rows in the excel file. Instead it's a heading for each of the descriptions.
-# To solve this, I would create a for-loop and loop through the description elements and then once I reach a different group title, I
-# change the group value and continue.
+There are borders between each weather section in the excel file. These will come up as NaN in the data frame once I load it in. The solution is to loop through the entire dataframe and remote the NaNs.
 
-# There are borders between each weather section in the excel file. These will come up as NaN in the data frame once I load it in
-# The solution is to loop through the entire dataframe and remote the NaNs.
+Similar situation to the group and description relationship in the excel file for the office size, type and value columns.
 
-# Similar situation to the group and description relationship in the excel file for the office size, type and value columns.
+Also the nnumeric data columns are not arranged nicely for analysis. I should created a new grid header which
+takes a combination of wall type and office size
 
-# Also the nnumeric data columns are not arranged nicely for analysis. I should created a new grid header which 
-# takes a combination of wall type and office size
+## Task 2: Clean the Data
 
-# Task 2: Clean the Data
-
-setwd("/Users/tarineccleston/Documents/Masters/STATS 765/statistical-learning-for-DS/w2")
-library(tidyverse)
-
-air_cond_df <- readxl::read_xlsx("data/simulation_outpu1_raw.xlsx", skip = 7, col_names = FALSE)
-clean_air_cond_df = air_cond_df
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 
 # Step 1: Give sensible column names
 # create column names for 6 measured cols
@@ -87,19 +81,20 @@ clean_air_cond_df = clean_air_cond_df %>%
   separate(structure, c("office_type", "office", "office_size"),
            sep = "_") %>%
   select(-office) # remove constant 'office' column as it's useless
-  
+```
 
 ## Task 3: Exploring the Data using ggplot2
 
-# Now use data and suitable plot(s) to answer the following questions. 
-# Show your script and your brief answers.
+Now use data and suitable plot(s) to answer the following questions. 
+Show your script and your brief answers.
 
-# For small office with sensible cooling in place, how does the outdoor temperature 
-# at peak load differ by weather? Does the pattern vary by office type?
+For small office with sensible cooling in place, how does the outdoor temperature 
+at peak load differ by weather? Does the pattern vary by office type?
   
-# Do any of these factors affect the total energy consumption: office_type; 
-# office_size and weather? If so, which one has the most significant impact?
+Do any of these factors affect the total energy consumption: office_type; 
+office_size and weather? If so, which one has the most significant impact?
 
+```{r pressure, echo=FALSE}
 clean_air_cond_df %>% filter(office_size == 'small') %>%
   filter(description == "Outdoor Temperature at Peak Load [C]"
   & group == "sensible_cooling") %>% # view
@@ -110,5 +105,13 @@ clean_air_cond_df %>% filter(office_size == 'small') %>%
         legend.text = element_text(size = 6),
         legend.title = element_text(size = 8)) 
 
+```
 
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
