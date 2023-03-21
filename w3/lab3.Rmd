@@ -1,0 +1,77 @@
+# STATS 765, Lab 03
+
+## Lab 03 Overview
+
+In the last lecture, we explored the sandwich estimator, which allows us to make valid estimation of se(β̂ )
+ for linear regression, without assuming the usual constant-variance of the residual errors.
+
+This lab is to gain a better understanding of this idea with a simulated data set.
+
+## Task 1: Generate data
+To illustrate the idea of using sandwich estimator, we first generate a set of data with increased variances as the predictor.
+
+### Step 1.1: Run the following piece of code, with your student as seed.
+
+```{r}
+set.seed(991) # replace "765" with your student ID.
+n = 200  
+x = rnorm(n)
+residual_std = exp(x) # error standard deviation is exponential w.r.t. x values, 
+y = 1.5+3*x + residual_std*rnorm(n)
+```
+
+### Step 1.2: Plot y vs. x and comment
+
+```{r}
+# create dataframe
+x_y_df = data.frame(cbind(x,y))
+plot(y ~ x, xlab = "x", ylab = "y", data = x_y_df)
+```
+
+
+There is a clear linear trend between $x$ and $y$.
+There is non-constant scatter, as the scatter increases as the value of x increases
+
+## Task 2: Fit the linear regression model as usual
+
+### Step 2.1: Fit a linear regression model
+
+Fit a linear regression model y~x and generate the model summary output.
+
+```{r}
+x_y_fit = lm(y ~ x, data = x_y_df)
+summary(x_y_fit)
+
+plot(y ~ x, xlab = "x", ylab = "y", data = x_y_df)
+abline(coef(x_y_fit)[1], coef(x_y_fit)[2])
+```
+
+### Step 2.2: Infererence based on summary output
+
+What is the standard error of coefficient of X? What is the 95% confidence interval of the β1^
+? Interprete the p-value shown.
+
+- Standard error for $\hat{\beta_1}$ is `r round(summary(x_y_fit)$coef["x", "Std. Error"], 3)`.\
+- The p-value tests the beta values to the null hypothesis. The null hypothesis being that the beta values are equal to 0. We have very strong evidence (P value = `r options(digits=3); summary(x_y_fit)$coef["x", "Pr(>|t|)"]`, we can reject the null hypothesis and make an inference that x and y are independent.\
+- The 95% confidence interval is `r confint(x_y_fit)["x", "2.5 %"]` and `r confint(x_y_fit)["x", "97.5 %"]`.\
+- t-statistic is calculated by the estimate minus the null hypothesis, divided by the standard error. We use the t-statistic to calculate the p-value.\
+
+## Task 3: Sandwich estimator
+
+### Step 3.1: Calculate se(βi^) use the sandwich estimator.
+
+```{r}
+
+```
+
+ 
+### Step 3.2: Inference
+
+Use the sandwich standard error for the cofficient of X to calculate the 95% confidence interval and p-value for β1
+
+# Task 4: Comparison and Comment
+
+What can you observe from comparing the two sets of inference results above?
+
+
+

@@ -1,0 +1,84 @@
+# STATS 765, Lab 01
+
+Use {tidyverse} for data wrangling and insight exploration tasks.
+
+### Task 1: Generate alarms data
+
+The following code snippet was used to generate the mock-up alarm frequency and reginal information, which that were used as examples in the lecture last week. Run the code with your student ID as seed variable and generate your own (random) data
+
+```{r task1, include=TRUE}
+# load library
+library(tidyverse)
+
+# set random seed
+seed <- 991 # <Replace '765' with your student ID here.>
+set.seed(seed)
+
+# generate alarm id, dates and region vectors
+# paste0: concatenate string (0 means there is no space)
+alarms_id.vt <- paste0('alarms_', sample(LETTERS, size = 10, replace = FALSE))
+alarms_dates.vt <- paste0('d.',seq(Sys.Date()-60, Sys.Date(), by = '1 day'))  # 60 days back.
+alarms_region.vt <- c('AKL_North', 'AKL_Central', 'Waiheke','AKL_South', 'AKL_Others')
+
+# generate random alarm frequency counts
+alarms_count.mt <- matrix(round(runif(length(alarms_id.vt) * length(alarms_dates.vt))*seed),
+                          nrow = length(alarms_id.vt), ncol=length(alarms_dates.vt))
+colnames(alarms_count.mt) <- alarms_dates.vt
+
+# set up data frames
+alarms_count.df <- data.frame(alarm_id = alarms_id.vt, alarms_count.mt)
+alarms_info.df <- data.frame(alarm_ID = alarms_id.vt, alarms_region = alarms_region.vt)
+```
+
+### Task 2: {tidyverse} Operations
+
+Use the data generated to answer the following question: what is the average number of alarms per day in each region?
+
+```{r task2, include=TRUE}
+alarms_insight_df <- alarms_count.df %>%
+  # pivot date data for joining with info data frame
+  gather('date', 'frequency', -alarm_id) %>%
+  # separate out dates
+  separate(date, c('prefix', 'year', 'month', 'day')) %>%
+  # remove prefix column
+  select(-prefix) %>%
+  # rejoin dates
+  left_join(alarms_info.df, by = c('alarm_id' = 'alarm_ID')) %>%
+  # clean up col order
+  group_by(year, month, day, alarms_region) %>%
+  summarise(average_count = round(mean(frequency),2))
+
+knitr::kable(head(alarms_insight_df, n = 10))
+```
+
+# Task 3: Date operation using {lubridate}
+
+Use the data generated to answer the following question: which days of the week has the 
+highest and the lowest average number of alarms across the entire Auckland?
+
+```{r task3, include=TRUE}
+library(lubridate)
+
+alarms_insight_df <- alarms_count.df %>%
+  gather('date', 'frequency', -alarm_id) %>%
+  # date is currently a string, need to convert to datetime object
+  mutate(dd = as.Date(substring(date, 3), format = '%Y.%m.%d')) %>%
+  mutate(week_day = wday(dd, label = TRUE, abbr = TRUE)) %>%
+  # clean up
+  select(-dd, -date) %>%
+  left_join(alarms_info.df, by = c('alarm_id' = 'alarm_ID')) %>%
+  group_by(week_day) %>%
+  summarise(average_count = round(mean(frequency),2)) %>%
+  arrange(average_count)
+```
+
+### Task 4: Retrospective
+
+Write a short paragraph summarising your experience 
+and comments about using {tidyverse} for data wrangling tasks.  
+
+I really enjoyed learning the most crucial data wrangling functions in R {tidyverse} for data science
+Wrangling is a process which I would like to get more understanding on. In particular what is best
+practice on order of operations i.e what do we clean up first.
+I believe it's the most crucial step in data science as no science can be done with 'dirty' data
+Hopefully data wrangling will click to me over the next few weeks!
