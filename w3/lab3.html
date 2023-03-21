@@ -419,27 +419,87 @@ abline(coef(x_y_fit)[1], coef(x_y_fit)[2])</code></pre>
 <h3>Step 2.2: Infererence based on summary output</h3>
 <p>What is the standard error of coefficient of X? What is the 95%
 confidence interval of the β1^ ? Interprete the p-value shown.</p>
-<p>Based on the summary report - Standard error for <span class="math inline">\(\hat{\beta_1}\)</span> is 0.172.<br />
-- The p-value tests the beta values to the null hypothesis. The null
+<ul>
+<li>Standard error for <span class="math inline">\(\hat{\beta_1}\)</span> is 0.172.<br />
+</li>
+<li>The p-value tests the beta values to the null hypothesis. The null
 hypothesis being that the beta values are equal to 0. We have very
 strong evidence (P value = 8.789^{-47}, we can reject the null
 hypothesis and make an inference that x and y are independent.<br />
-- The 95% confidence interval is 2.947 and 3.626.<br />
-- t-statistic is calculated by the estimate minus the null hypothesis,
+</li>
+<li>The 95% confidence interval is 2.947 and 3.626.<br />
+</li>
+<li>t-statistic is calculated by the estimate minus the null hypothesis,
 divided by the standard error. We use the t-statistic to calculate the
 p-value.<br />
-</p>
+</li>
+</ul>
+<p>Note: Equality of variance assumption is not satisfied. Therefore the
+output we get from R is not valid. The inference we got from the summary
+is based on the assumptions that the error term has constant
+scatter.</p>
+<p>Because of this, we can use bootstrapping sampling to get a reliastic
+estimateof the error. Alternatively we use the sandwich estimator.</p>
 </div>
 </div>
 <div id="task-3-sandwich-estimator" class="section level2">
 <h2>Task 3: Sandwich estimator</h2>
 <div id="step-3.1-calculate-seβi-use-the-sandwich-estimator." class="section level3">
 <h3>Step 3.1: Calculate se(βi^) use the sandwich estimator.</h3>
+<pre class="r"><code>library(sandwich)
+
+# get the sandwich variance estimator manually
+# use the matrix DS for matrix multiplication
+y_mat = matrix(y,ncol = 1)
+x_mat = cbind(1,matrix(x,ncol=1))
+
+# solve(t(x_mat) %*% x_mat) %*% t(x_mat) diag(diag((y-fitted(x_y_fit)) %*% 
+# t(y-fitted(x_y_fit))))  %*% t(solve(t(x_mat) %*% x_mat) %*% t(x_mat))  
+
+# compare sandwich vs lm for coefficients
+# using lm
+vcov(x_y_fit)</code></pre>
+<pre><code>##             (Intercept)       x
+## (Intercept)     0.03031 0.00253
+## x               0.00253 0.02962</code></pre>
+<pre class="r"><code># variance / covariance matrix
+# calculating automatically
+vcovHC(x_y_fit, type = &quot;HC&quot;)</code></pre>
+<pre><code>##             (Intercept)      x
+## (Intercept)      0.0392 0.0596
+## x                0.0596 0.1028</code></pre>
+<pre class="r"><code># calculating SE using lm under EOV assumption
+sqrt(diag(vcov(x_y_fit)))</code></pre>
+<pre><code>## (Intercept)           x 
+##       0.174       0.172</code></pre>
+<pre class="r"><code># calculating SE using sandwich estimator
+sqrt(diag(vcovHC(x_y_fit)))</code></pre>
+<pre><code>## (Intercept)           x 
+##       0.203       0.330</code></pre>
+<pre class="r"><code>sandwich_se = sqrt(diag(vcovHC(x_y_fit)))[2]</code></pre>
 </div>
 <div id="step-3.2-inference" class="section level3">
 <h3>Step 3.2: Inference</h3>
 <p>Use the sandwich standard error for the cofficient of X to calculate
 the 95% confidence interval and p-value for β1</p>
+<ul>
+<li>Standard error for <span class="math inline">\(\hat{\beta_1}\)</span> is 0.33.<br />
+</li>
+<li>The 95% confidence interval is 1.027, 2.64 and 2.321, 3.933.<br />
+</li>
+</ul>
+<pre class="r"><code>t_stat = coef(x_y_fit)/sandwich_se
+p_value = 2 * (1-pt(t_stat, df = n-2, lower.tail = TRUE))</code></pre>
+<ul>
+<li>The p-value tests the beta values to the null hypothesis. The null
+hypothesis being that the beta values are equal to 0. We have very
+strong evidence (P value = 9.042^{-7}, 0), we can reject the null
+hypothesis and make an inference that x and y are independent.<br />
+</li>
+<li>When using the sandwich estimator to calculate all other parameters.
+The most fundamental thing that changes is the standard error.<br />
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -447,6 +507,12 @@ the 95% confidence interval and p-value for β1</p>
 <h1>Task 4: Comparison and Comment</h1>
 <p>What can you observe from comparing the two sets of inference results
 above?</p>
+<ul>
+<li>The p-value from the sandwich estimator is smaller than that of the
+linear model assuming EOV. This is because the standard error is also
+smaller.<br />
+</li>
+</ul>
 </div>
 
 

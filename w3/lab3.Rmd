@@ -56,12 +56,37 @@ What is the standard error of coefficient of X? What is the 95% confidence inter
 - The 95% confidence interval is `r confint(x_y_fit)["x", "2.5 %"]` and `r confint(x_y_fit)["x", "97.5 %"]`.\
 - t-statistic is calculated by the estimate minus the null hypothesis, divided by the standard error. We use the t-statistic to calculate the p-value.\
 
+Note: Equality of variance assumption is not satisfied. Therefore the output we get from R is not valid. The inference we got from the summary is based on the assumptions that the error term has constant scatter. 
+
+Because of this, we can use bootstrapping sampling to get a reliastic estimateof the error. Alternatively we use the sandwich estimator.
+
 ## Task 3: Sandwich estimator
 
 ### Step 3.1: Calculate se(βi^) use the sandwich estimator.
 
 ```{r}
+library(sandwich)
 
+# get the sandwich variance estimator manually
+# use the matrix DS for matrix multiplication
+y_mat = matrix(y,ncol = 1)
+x_mat = cbind(1,matrix(x,ncol=1))
+
+# solve(t(x_mat) %*% x_mat) %*% t(x_mat) diag(diag((y-fitted(x_y_fit)) %*% 
+# t(y-fitted(x_y_fit))))  %*% t(solve(t(x_mat) %*% x_mat) %*% t(x_mat))  
+
+# compare sandwich vs lm for coefficients
+# using lm
+vcov(x_y_fit)
+# variance / covariance matrix
+# calculating automatically
+vcovHC(x_y_fit, type = "HC")
+
+# calculating SE using lm under EOV assumption
+sqrt(diag(vcov(x_y_fit)))
+# calculating SE using sandwich estimator
+sqrt(diag(vcovHC(x_y_fit)))
+sandwich_se = sqrt(diag(vcovHC(x_y_fit)))[2]
 ```
 
  
@@ -69,9 +94,24 @@ What is the standard error of coefficient of X? What is the 95% confidence inter
 
 Use the sandwich standard error for the cofficient of X to calculate the 95% confidence interval and p-value for β1
 
+- Standard error for $\hat{\beta_1}$ is `r options(digits=3); sqrt(diag(vcovHC(x_y_fit)))[2]`.\
+- The 95% confidence interval is `r coef(x_y_fit) - qnorm(0.975) * sandwich_se` and `r coef(x_y_fit) + qnorm(0.975) * sandwich_se`.\
+
+```{r}
+t_stat = coef(x_y_fit)/sandwich_se
+p_value = 2 * (1-pt(t_stat, df = n-2, lower.tail = TRUE))
+```
+
+
+- The p-value tests the beta values to the null hypothesis. The null hypothesis being that the beta values are equal to 0. We have very strong evidence (P value = `r p_value`), we can reject the null hypothesis and make an inference that x and y are independent.\
+- When using the sandwich estimator to calculate all other parameters. The most fundamental thing that changes is the standard error.\
+
 # Task 4: Comparison and Comment
 
 What can you observe from comparing the two sets of inference results above?
+
+- The p-value from the sandwich estimator is smaller than that of the linear model assuming
+EOV. This is because the standard error is also smaller.\
 
 
 
