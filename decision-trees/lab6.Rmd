@@ -1,0 +1,33 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# STATS 765: Lab 6
+
+## Task 1
+Build a classification tree using the variables in wordmatrix as predictors and the is_spam variable in df as the outcome. Comment on the shape of the tree.
+
+```{r}
+library(tree)
+library(rpart)
+load("data/spam.rda")
+
+spam_data = data.frame(df$is_spam, wordmatrix)
+names(spam_data)[1] = "is_spam"
+rpart(is_spam~. , data=spam_data)
+
+tree = tree(is_spam ~ ., data = spam_data)
+summary(tree)
+
+{
+plot(tree)
+text(tree)
+}
+```
+The tree has 20 nodes and appears to have a staircase structure. It is probably overfitted to the data as it appears to focus on only a couple of observations at a time.
+
+## Task 2
+Look at the description of the data sources. Would you expect dividing spam and non-spam to be easier or harder in this dataset than in real life, and why?
+
+Likely that the spam data will not be coming from Singapore and the UK, therefore we would need to train models on local messages for a particular country and it should be more useful in that country. Our real-world data will look very different to the training data. The model is also trained on UK and Singapore English, which isn't representative of the English for the rest of the world. The spam data is from the UK, and the non-spam data is from Singapore. This introduces bias into our data as the model will learn the differences between Singapore and UK English to identify whether a given message is spam or not. Data is also imbalanced, so we get bias towardds the UK data.
