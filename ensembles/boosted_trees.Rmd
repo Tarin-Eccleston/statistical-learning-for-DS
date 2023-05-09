@@ -11,33 +11,105 @@ The following code loads a dataset on mushroom properties (originally from: http
 
 ```{r}
 library(xgboost)
+library(DiagrammeR)
 data(agaricus.train, package='xgboost')
 data(agaricus.test, package='xgboost')
 
+set.seed(991)
+
+dim(agaricus.train$data)
 
 bst <- xgboost(data = agaricus.train$data, label = agaricus.train$label, 
                max_depth = 2, eta = 1, nthread = 2, nrounds = 2, 
                objective = "binary:logistic")
+
 pred <- predict(bst, agaricus.test$data)
+
+# confusion matrix are useful!
+table(Actual = agaricus.test$label, Predicted = pred > 0.5)
 ```
 
 1. What do `max_depth=2`, `eta=1` and `nrounds=2` do?
 
-- max_depth: the maximum depth of the base decision tree used in xgboost
-- eta: the learning rate of xgboost (gradient descent)
-- nrounds:  
+- max_depth: the maximum depth of the base decision tree used in xgboost (maximum length from base node to leaves)
+- eta: the learning rate of xgboost (gradient descent) where 0 < eta < 1
+- nrounds: ???
+- objective: depends on the objective of the prediction (i.e possion, binomial)
 
 2. Use `xgb.plot.tree` to draw the tree (it appears in your browser; you need to export/save it from there)
 
+Let's first look at our first observation to better understand xgboost
+
+```{r}
+agaricus.test$data[1,]
+```
+
+- For observation 1:
+  - odor=anise -> odor=none = 0 (False)
+  - stalk-root=clud -> club=1 (True)
+  - spore-print-colour=brown -> green = 0 (False)
+  
+Demonstration of first observation on xgboost...
+
+```{r}
+ADD IMAGE HERE
+```
+
+Same answer as...
+
+```{r}
+pred[1]
+```
+
+
+Plotting Tree
+
+```{r}
+xgb.plot.tree(model = bst)
+```
+
+
+- The output "value" is the prediction in log function
+
 3. Fit a model with the same options for `max_depth=2` and `eta=1` but with `nrounds` chosen to minimise cross-validation loss.  Use `xgb.plot.tree` to plot it. Comment on the relative accuracy and complexity of the two models
 
+```{r}
+xgb.cv(data = agaricus.train$data, label = agaricus.train$label, 
+               max_depth = 2, eta = 1, nthread = 2, nrounds = 30, nfold = 5,
+               objective = "binary:logistic", metrics = "error")
+```
+
+Note: the loss is "logloss", we can use the metric "error" to measure the prediction error for binary classification
+
+The best model appears to be run..... FINISH THIS
+
+```{r}
+xgb.cv(data = agaricus.train$data, label = agaricus.train$label, 
+               max_depth = 2, eta = 1, nthread = 2, nrounds = 3, nfold = 5,
+               objective = "binary:logistic", metrics = "error")
+```
+
+```{r}
+bst2 = xgboost(data = agaricus.train$data, label = agaricus.train$label, 
+               max_depth = 2, eta = 1, nthread = 2, nrounds = 3, 
+               objective = "binary:logistic")
+
+xgb.plot.tree(model = bst2)
+```
+
+
 4. Now try lowering the learning rate `eta` to reduce cross-validation loss. (think about a strategy for choosing values of `eta` to try, but don't try more than five or so different ones)
+
+```{r}
+# play around with this...
+```
 
 5. Data wrangling: the file mushroom.test contains descriptions of three new mushrooms. How does the first model classify their edibility?   *To convert the new data into the correct matrix form, you will need to construct column names as they are in the main data set. The names from the main data can be retrieved using `dimnames(agaricus.train$data)[[2]]`*.
 
 ```{r}
 mushroom_new_df = read.csv("data/mushroom.test")
-```
 
+# basically one-hot encoding
+```
 
 6. The mushrooms are A: *Amanita phalloides*, B: *Amanita virosa*, C: *Volvariella volvacea*. Look up their common names. Comment on the usefulness of the model.
