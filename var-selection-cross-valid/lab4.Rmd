@@ -1,0 +1,115 @@
+# STATS 765: Lab 4
+## Author: Tarin Eccleston
+
+
+```{r cache=TRUE}
+# admin
+library(tidyverse)
+library(leaps)
+setwd("/Users/tarineccleston/Documents/Masters/STATS 765/statistical-learning-for-DS/var-selection-cross-valid")
+
+sgemm_df = read.csv("data/sgemm_product.csv")
+
+glimpse(sgemm_df)
+```
+
+### Task 1: Generate random row indices
+
+```{r}
+set.seed(991920861)
+sgemm_subset_indices_df = sample(1:nrow(sgemm_df), 500)
+```
+
+### Task 2: Backward stepwise selection: 
+
+Step 2.1: calculate log(time) for run 1
+
+```{r}
+sgemm_run1_df = sgemm_df %>%
+  mutate(Log_Run1..ms. = log(Run1..ms.)) %>%
+  select(-Run1..ms., -Run2..ms., -Run3..ms., -Run4..ms.)
+
+# get sample
+sgemm_run1_df = sgemm_run1_df[sgemm_subset_indices_df,]
+
+glimpse(sgemm_run1_df)
+```
+
+Step 2.2: perform backward stepwise selection
+
+```{r}
+X<-model.matrix(Log_Run1..ms.~.^2, sgemm_run1_df)[,-1]
+y<-sgemm_run1_df$Log_Run1..ms.
+
+model = regsubsets(X, y, nvmax=20, method="backward")
+subset = summary(model)
+
+apparentErrors = subset$rss / (nrow(sgemm_run1_df) - 1:20)
+qplot(x = 1:20, y = apparentErrors, xlab = "Number of Variables", ylab = "Apparent Error")
+```
+
+### Task 3: Cross Validation
+
+```{r}
+allyhat<-function(xtrain, ytrain, xtest, lambdas, nvmax=50){
+  n<-nrow(xtrain)
+  yhat<-matrix(nrow=nrow(xtest),ncol=length(lambdas))
+  search<-regsubsets(xtrain,ytrain, nvmax=nvmax, method="back")
+  summ<-summary(search)
+  for(i in 1:length(lambdas)){
+    penMSE<- n*log(summ$rss)+lambdas[i]*(1:nvmax)
+    best<-which.min(penMSE)  #lowest AIC
+    betahat<-coef(search, best) #coefficients
+    xinmodel<-cbind(1,xtest)[,summ$which[best,]] #predictors in that model
+    yhat[,i]<-xinmodel%*%betahat
+  }
+  yhat
+}
+
+y = sgemm_run1_df$Log_Run1..ms.
+n = nrow(X)
+folds=sample(rep(1:10,length.out=n))
+lambdas = c(2,4,6,8,10,12)
+fitted = matrix(nrow=n,ncol=length(lambdas))
+for(k in 1:10){
+  train = (1:n)[folds!=k]
+  test = (1:n)[folds==k]
+  fitted[test,]<-allyhat(xtrain=X[train,],ytrain=y[train],xtest=X[test,],lambdas)
+}
+
+a=colMeans((y-fitted)^2)
+a
+lambdas[which.min(a)]
+```
+
+Lambda = 2 for the lowest MSPE
+
+### Task 4: Estimate MSPE
+
+Step 4.1: MSPE for the sample dataset
+
+```{r}
+sgemm_run2_df = sgemm_df %>%
+  mutate(Log_Run2..ms. = log(Run2..ms.)) %>%
+  select(-Run1..ms., -Run2..ms., -Run3..ms., -Run4..ms.)
+
+sgemm_run2_df = sgemm_run2_df[sgemm_subset_indices_df,]
+best_lambda = 8
+
+search_run2 = regsubsets(X, y, nvmax = 20, method = "backward")
+summ = summary(search_run2)
+
+aic = length(sgemm_subset_indices_df) * log(summ$rss) + best_lambda*(1:20)
+best = which.min(aic)
+betahat = coef(search_run2, best)
+betahat
+```
+```{r}
+Xpred = cbind(1, X)[,summ$which[best,]]
+fitted = Xpred%*%betahat
+MSPEExample = sum((sgemm_run2_df - fitted)^2) / length(fitted)
+MSPEExample
+```
+
+
+
