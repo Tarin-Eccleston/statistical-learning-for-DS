@@ -1,0 +1,63 @@
+# STATS 765: Lab 9
+
+```{r}
+setwd("/Users/tarineccleston/Documents/Masters/STATS 765/statistical-learning-for-DS")
+library(ranger)
+library(tidyverse)
+
+work_df = read_csv("data/stack_overflow.csv")
+glimpse(work_df)
+```
+
+## Task 1: Use ranger() to predict remote working, and compute the confusion matrix (using the full data set for both). Calculate the misclassification rate, recall, specificity based on the confusion matrix.
+
+```{r}
+work_df = work_df %>%
+  select(-respondent) %>%
+  mutate(is_remote = if_else(remote == 'Remote', 1, 0)) %>%
+  select(-remote)
+```
+
+```{r}
+work_fit_rf = ranger(factor(is_remote) ~ ., data = work_df, importance = 'permutation', classification = TRUE)
+work_pred = predict(work_fit_rf, work_df)$predictions
+
+table(actual = work_df$is_remote, predictied = work_pred)
+```
+### mis-classification rate
+
+```{r}
+```
+
+## Task 2:  Using permutation importance, what were the most important six variables?
+
+```{r}
+head(sort(work_fit_rf$variable.importance, decreasing = TRUE), n = 6)
+```
+
+## Task 3: Only about 10% of developers work remotely. Use the class.weights option of ranger() to reweight the two possible outcomes so that the total weight for the remote workers is the same as for the non-remote workers, and compute the new confusion matrix. 
+
+Basically use the ratio between the true class labels as weight. Penalise more on wrong predictions on the positive class. We already have good predictions on the negative class.
+
+```{r}
+table(work_df$is_remote, useNA = 'always')
+```
+
+
+```{r}
+work_fit_weighted_rf = ranger(factor(is_remote) ~ ., data = work_df, class.weights = c(1, 6273/718), importance = 'permutation', classification = TRUE) # weight more on positive class
+work_weighted_pred = predict(work_fit_weighted_rf, work_df)$predictions
+
+table(actual = work_df$is_remote, predictied = work_weighted_pred)
+```
+## Task 4:  Using permutation importance, what were the most important six variables -- have these changed from the unweighted fit? Graph or tabulate the outcome against these six variables and comment on the relationships
+
+```{r}
+head(sort(work_fit_weighted_rf$variable.importance, decreasing = TRUE), n = 6)
+```
+
+Open source and years coded job swapped places. Graphics programming bumped database administrator.
+
+## Task 5: Describe the impact of weighting (how has the accuracy changed for remote workers, how has it changed for non-remote workers).
+
+If the model is not using equal weight, it will create bias in the higher weighted classes, therefore we would expect to have more features prominent in 

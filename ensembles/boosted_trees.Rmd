@@ -52,7 +52,7 @@ agaricus.test$data[1,]
 Demonstration of first observation on xgboost...
 
 ```{r}
-ADD IMAGE HERE
+
 ```
 
 Same answer as...
@@ -110,6 +110,9 @@ xgb.plot.tree(model = bst2)
 mushroom_new_df = read.csv("data/mushroom.test")
 
 # basically one-hot encoding
+
 ```
+
+- Note: Be aware of transferability of dataset
 
 6. The mushrooms are A: *Amanita phalloides*, B: *Amanita virosa*, C: *Volvariella volvacea*. Look up their common names. Comment on the usefulness of the model.
