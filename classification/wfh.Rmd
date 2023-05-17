@@ -1,7 +1,7 @@
 # STATS 765: Lab 9
 
 ```{r}
-setwd("/Users/tarineccleston/Documents/Masters/STATS 765/statistical-learning-for-DS")
+setwd("/Users/tarineccleston/Documents/Masters/STATS 765/statistical-learning-for-DS/classification")
 library(ranger)
 library(tidyverse)
 
@@ -24,10 +24,27 @@ work_pred = predict(work_fit_rf, work_df)$predictions
 
 table(actual = work_df$is_remote, predictied = work_pred)
 ```
-### mis-classification rate
+### misclassification rate
 
 ```{r}
+mis_rate = (284 + 0)/(6273 + 434)
+mis_rate
 ```
+
+### recall
+
+```{r}
+recall = (434)/(284 + 434)
+recall
+```
+
+### specificity
+
+```{r}
+speci = (6273)/(6273 + 0)
+speci
+```
+
 
 ## Task 2:  Using permutation importance, what were the most important six variables?
 
@@ -60,4 +77,4 @@ Open source and years coded job swapped places. Graphics programming bumped data
 
 ## Task 5: Describe the impact of weighting (how has the accuracy changed for remote workers, how has it changed for non-remote workers).
 
-If the model is not using equal weight, it will create bias in the higher weighted classes, therefore we would expect to have more features prominent in 
+If the model is not using equal weight, it will create bias in the higher weighted classes, therefore we would expect to have more features prominent in our decision tree which are from the working from home class.
