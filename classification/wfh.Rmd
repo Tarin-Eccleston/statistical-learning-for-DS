@@ -67,6 +67,7 @@ work_weighted_pred = predict(work_fit_weighted_rf, work_df)$predictions
 
 table(actual = work_df$is_remote, predictied = work_weighted_pred)
 ```
+
 ## Task 4:  Using permutation importance, what were the most important six variables -- have these changed from the unweighted fit? Graph or tabulate the outcome against these six variables and comment on the relationships
 
 ```{r}

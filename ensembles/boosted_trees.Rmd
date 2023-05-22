@@ -33,7 +33,7 @@ table(Actual = agaricus.test$label, Predicted = pred > 0.5)
 
 - max_depth: the maximum depth of the base decision tree used in xgboost (maximum length from base node to leaves)
 - eta: the learning rate of xgboost (gradient descent) where 0 < eta < 1
-- nrounds: ???
+- nrounds: the maximum number of subsiquentboosted trees 
 - objective: depends on the objective of the prediction (i.e possion, binomial)
 
 2. Use `xgb.plot.tree` to draw the tree (it appears in your browser; you need to export/save it from there)
@@ -52,7 +52,7 @@ agaricus.test$data[1,]
 Demonstration of first observation on xgboost...
 
 ```{r}
-
+knitr::include_graphics("data/boosting_working.png")
 ```
 
 Same answer as...
@@ -74,7 +74,7 @@ xgb.plot.tree(model = bst)
 3. Fit a model with the same options for `max_depth=2` and `eta=1` but with `nrounds` chosen to minimise cross-validation loss.  Use `xgb.plot.tree` to plot it. Comment on the relative accuracy and complexity of the two models
 
 ```{r}
-xgb.cv(data = agaricus.train$data, label = agaricus.train$label, 
+xgb_best = xgb.cv(data = agaricus.train$data, label = agaricus.train$label, 
                max_depth = 2, eta = 1, nthread = 2, nrounds = 30, nfold = 5,
                objective = "binary:logistic", metrics = "error")
 ```
@@ -101,18 +101,23 @@ xgb.plot.tree(model = bst2)
 4. Now try lowering the learning rate `eta` to reduce cross-validation loss. (think about a strategy for choosing values of `eta` to try, but don't try more than five or so different ones)
 
 ```{r}
-# play around with this...
+for (i in c(0.1, 0.25, 0.5, 0.75, 1.0)) {
+  print(i)
+  xgb.cv(data = agaricus.train$data, label = agaricus.train$label, 
+                 max_depth = 2, eta = i, nthread = 2, nrounds = 10, nfold = 5,
+                 objective = "binary:logistic", metrics = "error")
+}
 ```
+
+We looks at smallest errors (dips) of each learning rate to determine the number of iterations/runs we need. Learning rate of 1.0 requires just 3 runs, whereas unsurprisingly the minimum number of runs increases as the learning rate decreases. Learning rate of 0.1 requires 7 runs to get the min error.
 
 5. Data wrangling: the file mushroom.test contains descriptions of three new mushrooms. How does the first model classify their edibility?   *To convert the new data into the correct matrix form, you will need to construct column names as they are in the main data set. The names from the main data can be retrieved using `dimnames(agaricus.train$data)[[2]]`*.
 
 ```{r}
-mushroom_new_df = read.csv("data/mushroom.test")
-
-# basically one-hot encoding
-
+# just draw diagram
+knitr::include_graphics("data/boosting_new_working.jpg")
 ```
 
-- Note: Be aware of transferability of dataset
-
 6. The mushrooms are A: *Amanita phalloides*, B: *Amanita virosa*, C: *Volvariella volvacea*. Look up their common names. Comment on the usefulness of the model.
+
+After some research A and B are actually poisonous, however they're both predicted as being not poisonous which is incorrect. C is predicted as non-poisonous and it is non-poisonous in reality which is correct. Not a useful model, probably trained on species in America as opposed to New Zealand.
